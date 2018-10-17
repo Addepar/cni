@@ -81,9 +81,9 @@ type PluginConf struct {
 type K8sArgs struct {
 	types.CommonArgs
 	IP                   net.IP
-	K8sPodName           types.UnmarshallableString
-	K8sPodNamespace      types.UnmarshallableString
-	K8sPodInfraContainer types.UnmarshallableString
+	K8S_POD_NAME           types.UnmarshallableString
+	K8S_POD_NAMESPACE      types.UnmarshallableString
+	K8S_POD_INFRA_CONTAINER types.UnmarshallableString
 }
 
 func setupRedirect(netns string, ports []string) error {
@@ -195,15 +195,15 @@ func cmdAdd(args *skel.CmdArgs) error {
 	var logger *logrus.Entry
 	logger = logrus.WithFields(logrus.Fields{
 		"ContainerID": args.ContainerID,
-		"Pod":         string(k8sArgs.K8sPodName),
-		"Namespace":   string(k8sArgs.K8sPodNamespace),
+		"Pod":         string(k8sArgs.K8S_POD_NAME),
+		"Namespace":   string(k8sArgs.K8S_POD_NAMESPACE),
 	})
 
 	// Check if the workload is running under Kubernetes.
-	if string(k8sArgs.K8sPodNamespace) != "" && string(k8sArgs.K8sPodName) != "" {
+	if string(k8sArgs.K8S_POD_NAMESPACE) != "" && string(k8sArgs.K8S_POD_NAME) != "" {
 		excludePod := false
 		for _, excludeNs := range conf.Kubernetes.ExcludeNamespaces {
-			if string(k8sArgs.K8sPodNamespace) == excludeNs {
+			if string(k8sArgs.K8S_POD_NAMESPACE) == excludeNs {
 				excludePod = true
 				break
 			}
@@ -214,7 +214,7 @@ func cmdAdd(args *skel.CmdArgs) error {
 				return err
 			}
 			logrus.WithField("client", client).Debug("Created Kubernetes client")
-			containers, _, _, ports, k8sErr := GetK8sPodInfo(client, string(k8sArgs.K8sPodName), string(k8sArgs.K8sPodNamespace))
+			containers, _, _, ports, k8sErr := GetK8sPodInfo(client, string(k8sArgs.K8S_POD_NAME), string(k8sArgs.K8S_POD_NAMESPACE))
 			if k8sErr != nil {
 				logger.Warnf("Error geting Pod data %v", k8sErr)
 			}
@@ -225,8 +225,8 @@ func cmdAdd(args *skel.CmdArgs) error {
 				logrus.WithFields(logrus.Fields{
 					"ContainerID": args.ContainerID,
 					"netns":       args.Netns,
-					"pod":         string(k8sArgs.K8sPodName),
-					"Namespace":   string(k8sArgs.K8sPodNamespace),
+					"pod":         string(k8sArgs.K8S_POD_NAME),
+					"Namespace":   string(k8sArgs.K8S_POD_NAMESPACE),
 					"ports":       ports,
 				}).Infof("Updating iptables redirect for Istio proxy")
 
